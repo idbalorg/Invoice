@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bolt Ride Invoice Generator</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f5f6f7;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      gap: 20px;
+    }
+
+    .form-container, .invoice-container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      flex: 1;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    .form-container label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .form-container input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .btn {
+      margin-top: 15px;
+      padding: 10px 15px;
+      background: #34d186;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: #28b173;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: bold;
+      color: #34d186;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    table th, table td {
+      border: 1px solid #e5e5e5;
+      padding: 10px;
+      text-align: right;
+      font-size: 14px;
+    }
+
+    table th {
+      background-color: #f0fdf6;
+    }
+
+    table td:first-child, table th:first-child {
+      text-align: left;
+    }
+
+    .total-section {
+      text-align: right;
+      margin-top: 10px;
+    }
+
+    .charged {
+      margin-top: 15px;
+      font-weight: bold;
+      background: #f0fdf6;
+      padding: 10px;
+      border-radius: 4px;
+      text-align: right;
+    }
+
+    @media print {
+      body {
+        background: none;
+        padding: 0;
+      }
+      .form-container {
+        display: none;
+      }
+      .invoice-container {
+        box-shadow: none;
+        border: none;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Input Form -->
+  <div class="form-container">
+    <h2>Invoice Form</h2>
+
+    <label>Invoice No:</label>
+    <input type="text" id="invoiceNo" value="34461108-NG1125-2123">
+
+    <label>Date:</label>
+    <input type="date" id="date" value="2025-08-12">
+
+    <label>Recipient:</label>
+    <input type="text" id="recipient" value="Idris Balogun">
+
+    <label>Start Location:</label>
+    <input type="text" id="start" value="3B Ruxton Street, Lagos">
+
+    <label>Trip Fee:</label>
+    <input type="number" id="tripFee" value="2448.36">
+
+    <label>Levy:</label>
+    <input type="number" id="levy" value="30.00">
+
+    <label>Booking Fee:</label>
+    <input type="number" id="bookingFee" value="121.64">
+
+    <button class="btn" onclick="generateInvoice()">Generate Invoice</button>
+    <button class="btn" onclick="window.print()">Print Invoice</button>
+  </div>
+
+  <!-- Invoice Preview -->
+  <div class="invoice-container" id="invoice">
+    <div class="header">
+      <div class="logo">Bolt</div>
+      <div><strong>Invoice</strong></div>
+    </div>
+
+    <h2>Ride Invoice</h2>
+
+    <p><strong>Invoice no:</strong> <span id="previewInvoiceNo"></span></p>
+    <p><strong>Date:</strong> <span id="previewDate"></span></p>
+    <p><strong>Recipient:</strong> <span id="previewRecipient"></span></p>
+    <p><strong>Start:</strong> <span id="previewStart"></span></p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Sum (NGN)</th>
+          <th>VAT 0%</th>
+          <th>Total sum (NGN)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Trip Fee</td>
+          <td id="previewTripFee"></td>
+          <td>0.00</td>
+          <td id="previewTripFeeTotal"></td>
+        </tr>
+        <tr>
+          <td>Lagos State Road Development Fund Levy</td>
+          <td id="previewLevy"></td>
+          <td>0.00</td>
+          <td id="previewLevyTotal"></td>
+        </tr>
+        <tr>
+          <td>Booking Fee</td>
+          <td id="previewBookingFee"></td>
+          <td>0.00</td>
+          <td id="previewBookingFeeTotal"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="total-section">
+      <p><strong>Total (NGN):</strong> <span id="previewTotal"></span></p>
+      <p><strong>VAT 0%:</strong> 0.00</p>
+      <p><strong>Total including VAT (NGN):</strong> <span id="previewTotal"></span></p>
+    </div>
+
+    <div class="charged">
+      Charged — Cash: <span id="previewTotalCash"></span>
+    </div>
+  </div>
+
+<script>
+  function generateInvoice() {
+    const invoiceNo = document.getElementById("invoiceNo").value;
+    const date = document.getElementById("date").value;
+    const recipient = document.getElementById("recipient").value;
+    const start = document.getElementById("start").value;
+    const tripFee = parseFloat(document.getElementById("tripFee").value) || 0;
+    const levy = parseFloat(document.getElementById("levy").value) || 0;
+    const bookingFee = parseFloat(document.getElementById("bookingFee").value) || 0;
+
+    const total = (tripFee + levy + bookingFee).toFixed(2);
+
+    document.getElementById("previewInvoiceNo").textContent = invoiceNo;
+    document.getElementById("previewDate").textContent = date;
+    document.getElementById("previewRecipient").textContent = recipient;
+    document.getElementById("previewStart").textContent = start;
+
+    document.getElementById("previewTripFee").textContent = tripFee.toFixed(2);
+    document.getElementById("previewTripFeeTotal").textContent = tripFee.toFixed(2);
+
+    document.getElementById("previewLevy").textContent = levy.toFixed(2);
+    document.getElementById("previewLevyTotal").textContent = levy.toFixed(2);
+
+    document.getElementById("previewBookingFee").textContent = bookingFee.toFixed(2);
+    document.getElementById("previewBookingFeeTotal").textContent = bookingFee.toFixed(2);
+
+    document.getElementById("previewTotal").textContent = total;
+    document.getElementById("previewTotalCash").textContent = total;
+  }
+
+  // auto-generate on page load with defaults
+  generateInvoice();
+</script>
+
+</body>
+</html>
